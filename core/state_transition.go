@@ -521,19 +521,10 @@ func (st *StateTransition) innerTransitionDb() (*ExecutionResult, error) {
 			if err != nil {
 				continue
 			}
-			var nonce *uint64
-			if len(auth.Nonce) > 1 {
-				return nil, fmt.Errorf("authorization must be either empty list or contain exactly one element")
-			}
-			if len(auth.Nonce) == 1 {
-				tmp := auth.Nonce[0]
-				nonce = &tmp
-			}
-			if nonce != nil {
-				if have := st.state.GetNonce(authority); have != *nonce {
-					continue
-				}
-			}
+            nonce := auth.Nonce
+            if have := st.state.GetNonce(authority); have != nonce {
+                continue
+            }
 			if _, ok := seen[authority]; !ok {
 				seen[authority] = true
 				delegations = append(delegations, types.SetCodeDelegation{From: authority, Nonce: nonce, Target: auth.Address})
