@@ -40,8 +40,8 @@ type SetCodeTx struct {
 type Authorization struct {
 	ChainID *big.Int
 	Address common.Address `json:"address" gencodec:"required"`
-	Nonce   uint64       `json:"nonce" gencodec:"required"`
-	V       *big.Int       `json:"v" gencodec:"required"`
+	Nonce   uint64         `json:"nonce" gencodec:"required"`
+	YParity *big.Int       `json:"yParity" gencodec:"required"`
 	R       *big.Int       `json:"r" gencodec:"required"`
 	S       *big.Int       `json:"s" gencodec:"required"`
 }
@@ -50,7 +50,7 @@ type Authorization struct {
 type authorizationMarshaling struct {
 	ChainID *hexutil.Big
 	Nonce   hexutil.Uint64
-	V       *hexutil.Big
+	YParity *hexutil.Big
 	R       *hexutil.Big
 	S       *hexutil.Big
 }
@@ -73,12 +73,12 @@ func SignAuth(auth *Authorization, prv *ecdsa.PrivateKey) (*Authorization, error
 
 func (a *Authorization) WithSignature(sig []byte) *Authorization {
 	r, s, _ := decodeSignature(sig)
-	v := big.NewInt(int64(sig[64]))
+	yParity := big.NewInt(int64(sig[64]))
 	cpy := Authorization{
 		ChainID: a.ChainID,
 		Address: a.Address,
 		Nonce:   a.Nonce,
-		V:       v,
+		YParity: yParity,
 		R:       r,
 		S:       s,
 	}
@@ -96,8 +96,8 @@ func (a Authorization) Authority() (common.Address, error) {
 			a.Nonce,
 		})
 
-	v := byte(a.V.Uint64())
-	if !crypto.ValidateSignatureValues(v, a.R, a.S, false) {
+	yParity := byte(a.YParity.Uint64())
+	if !crypto.ValidateSignatureValues(yParity, a.R, a.S, false) {
 		return common.Address{}, ErrInvalidSig
 	}
 	// encode the signature in uncompressed format
@@ -105,7 +105,7 @@ func (a Authorization) Authority() (common.Address, error) {
 	sig := make([]byte, crypto.SignatureLength)
 	copy(sig[32-len(r):32], r)
 	copy(sig[64-len(s):64], s)
-	sig[64] = v
+	sig[64] = yParity
 	// recover the public key from the signature
 	pub, err := crypto.Ecrecover(sighash[:], sig)
 	if err != nil {
