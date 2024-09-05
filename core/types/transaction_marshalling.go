@@ -179,7 +179,6 @@ func (tx *Transaction) MarshalJSON() ([]byte, error) {
 		yparity := itx.V.Uint64()
 		enc.YParity = (*hexutil.Uint64)(&yparity)
 
-
 	case *DepositTx:
 		enc.Gas = (*hexutil.Uint64)(&itx.Gas)
 		enc.Value = (*hexutil.Big)(itx.Value)

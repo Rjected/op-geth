@@ -521,10 +521,10 @@ func (st *StateTransition) innerTransitionDb() (*ExecutionResult, error) {
 			if err != nil {
 				continue
 			}
-            nonce := auth.Nonce
-            if have := st.state.GetNonce(authority); have != nonce {
-                continue
-            }
+			nonce := auth.Nonce
+			if have := st.state.GetNonce(authority); have != nonce {
+				continue
+			}
 			if _, ok := seen[authority]; !ok {
 				seen[authority] = true
 				delegations = append(delegations, types.SetCodeDelegation{From: authority, Nonce: nonce, Target: auth.Address})
